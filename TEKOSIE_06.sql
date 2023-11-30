@@ -1,0 +1,41 @@
+
+-- Izpētīt sekojošu skriptu, kurš katrai automašīnai, kurai trūkst dati, uz ekrāna izvada trūkstošos periodus
+GO
+DECLARE
+    ATD_CURSOR CURSOR FOR
+    WITH CTE1 AS (select VRN,
+                         PERIODS,
+                         LAG(PERIODS, 1) OVER (partition by VRN order by PERIODS) PERIODS_IEPR
+                  from goaldatums_2023gads)
+       , CTE2 AS (SELECT VRN,
+                         CAST(PERIODS + '01' AS DATE)      as PERIODS_DATE,
+                         CAST(PERIODS_IEPR + '01' AS DATE) as PERIODS_IEPR_DATE
+                  FROM CTE1)
+
+    select VRN,
+           PERIODS_DATE,
+           PERIODS_IEPR_DATE,
+           DATEDIFF(MONTH, PERIODS_IEPR_DATE, PERIODS_DATE) AS STARPIBA
+    FROM CTE2
+    WHERE DATEDIFF(MONTH, PERIODS_IEPR_DATE, PERIODS_DATE) > 3
+    ORDER BY STARPIBA DESC
+
+DECLARE @VRN VARCHAR(200);
+DECLARE @PERIODS_DATE DATE;
+DECLARE @PERIODS_IEPR_DATE DATE;
+DECLARE @STARPIBA INT;
+
+OPEN ATD_CURSOR
+FETCH NEXT FROM ATD_CURSOR INTO @VRN, @PERIODS_DATE, @PERIODS_IEPR_DATE, @STARPIBA
+WHILE @@FETCH_STATUS = 0
+    BEGIN
+        PRINT ('VRN: ' + @VRN + ' ' + CAST(@PERIODS_DATE as VARCHAR) + ' ' + CAST(@PERIODS_IEPR_DATE as VARCHAR))
+        WHILE @PERIODS_IEPR_DATE < @PERIODS_DATE
+            BEGIN
+                SET @PERIODS_IEPR_DATE = DATEADD(MONTH, 1, @PERIODS_IEPR_DATE);
+                PRINT(@PERIODS_IEPR_DATE)
+            END
+        FETCH NEXT FROM ATD_CURSOR INTO @VRN, @PERIODS_DATE, @PERIODS_IEPR_DATE, @STARPIBA
+    END
+CLOSE ATD_CURSOR;
+DEALLOCATE ATD_CURSOR;
