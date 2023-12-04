@@ -219,32 +219,25 @@ CLOSE ATD_CURSOR;
 DEALLOCATE ATD_CURSOR;
 GO;
 
+
+-- MD1
+-- Nodarbībā risināto piemēru rūpīgi izpētīt, saprast katru rindiņu.
+-- Papildināt uzdevumu tā, lai INSERT ievietotu ne tikai VRN un PERIODS,
+-- bet arī nobraukuma datus, aizvietojot tos ar pēdējiem pieejamiem (pieņemam, ka trūkstošajos periodos netiek braukts
+
+-- MD2
+-- goaldatums_2023gads - katrai automašīnai (VRN) (varam sākumā vienai, tad ar CURSOR katrai), uzrakstīt skriptu,
+-- kurš iegūst visus pieejamos dažādos TA datumus (TA_DATUMS):
+-- ja tāds ir 1, tad mūsu gadījumā izlaižam
+-- ja tādi ir 2, tad aprēķinam periodu mēnešos starp tiem
+-- ja tādi ir 3 vai vairāk, tad atrast garāko periodu (piem, starp 1 un 2 vai 2 un 3)
+-- tad kad periods atrasts, tad noskaidrot nobraukuma (PED_ODOMETRA_RADIJUMS) starpību, starp šiem diviem datumiem.
+-- var arī meklēt nevis garāko periodu starp TA, bet to, kas tuvāks 12 mēnešiem, tomēr mums ir tikai viena gada dati,
+-- tāpēc tas šķiet nebūs iespējams - jebkurā gadījumā, šis nosacījums jau būtu viegli pamaināms.
+
+-- šis ir paliels uzdevums, tāpēc var risināt pakāpeniski, izmēģināt dažādas pieejas (īpaši sākotnējo SQL ar kuru atlasām datus)
+-- var arī pamainīt uzdevuma nosacījumus, to aprakstot
+-- arī daļējus risinājumus lūdzu iesūtīt, lai varu nokomentēt!
+
+
 --- GIT VERSIJU KONTROLE
-
----- SPATIAL
-
-select ID,
-       geom.ToString(),
-       geom.STAsText()
-from Grid_LV_1k
-
-select ID,
-       L1_name,
-       geom.STAsText()
-from VZD_teritorialas_vienibas_2017
-where geom.STGeometryType() <> 'MultiPolygon'
-
-
-select Nosaukums,
-       Adrese,
-       X,
-       Y,
-       geom.STAsText()
-from tea.VDVV_2017
-
-
-select v.*
-from tea.VDVV_2017 v
-         inner join VZD_teritorialas_vienibas_2017 t
-                    on t.geom.STContains(v.geom) = 1
-where t.L1_name = 'Līgatne'
