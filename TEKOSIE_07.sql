@@ -20,7 +20,7 @@ DECLARE
            DATEDIFF(MONTH, PERIODS_IEPR_DATE, PERIODS_DATE) AS STARPIBA
     FROM CTE2
     WHERE DATEDIFF(MONTH, PERIODS_IEPR_DATE, PERIODS_DATE) > 3
---       AND VRN = '0x7430E3A5AD6AEAE61203A395A2E1BA0371F67AAFA7B64E72A9449E0D7D40B890'
+      AND VRN = '0x7430E3A5AD6AEAE61203A395A2E1BA0371F67AAFA7B64E72A9449E0D7D40B890'
     ORDER BY STARPIBA DESC
 
 DECLARE @VRN VARCHAR(200);
@@ -72,6 +72,7 @@ declare
     where VRN in ( '0xFE6A67555D3314E941E99EE8AB574C624DB8B806886355BB55D985D83B183F5F', '0x7430E3A5AD6AEAE61203A395A2E1BA0371F67AAFA7B64E72A9449E0D7D40B890')
     GROUP BY VRN, TA_DATUMS, PED_ODOMETRA_RADIJUMS
     ORDER BY VRN, TA_DATUMS
+
 -- deklarejam mainigos
 declare @vrn varchar(max), @vrn_prev varchar(max) = null;
 declare @ta_datums datetime;
@@ -96,7 +97,7 @@ while @@fetch_status = 0 -- ārējais cikls pārlasa visus atrastos VRN
             begin
                 set @vrn_prev = @vrn;
                 set @stop = @ta_datums; -- intervāla beigas
-                set @current_diff = datediff(month, @start, @stop);
+                set @current_diff = datediff(day, @start, @stop);
                 if @current_diff > @max_diff -- ja esam atraduši garāku TA periodu nekā līdz šim
                     begin
                         set @max_diff = @current_diff;
@@ -210,3 +211,17 @@ DECLARE @Sq geometry
 = geometry::STGeomFromText('POLYGON((100 100,200 300,300 100, 100 100))', 0);
 
 SELECT @Sq.STSymDifference(@Tri)
+
+---
+
+-- atrast parāda pieagumu starp pirmo un pēdējo gadu
+
+select
+    Pasvaldibas_ID,
+    Pasvaldibas_nosaukums,
+    Gads,
+    EUR,
+    FIRST_VALUE(EUR) over (PARTITION BY Pasvaldibas_ID ORDER BY Gads) as First,
+    LAST_VALUE(EUR) over (PARTITION BY Pasvaldibas_ID ORDER BY Gads ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as Last
+from vk.dati
+order by Pasvaldibas_ID, Gads
