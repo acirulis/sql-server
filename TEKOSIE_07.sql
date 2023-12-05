@@ -215,7 +215,8 @@ SELECT @Sq.STSymDifference(@Tri)
 ---
 
 -- atrast parāda pieagumu starp pirmo un pēdējo gadu
-
+USE ADP;
+GO;
 select
     Pasvaldibas_ID,
     Pasvaldibas_nosaukums,
@@ -225,3 +226,9 @@ select
     LAST_VALUE(EUR) over (PARTITION BY Pasvaldibas_ID ORDER BY Gads ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as Last
 from vk.dati
 order by Pasvaldibas_ID, Gads
+
+-- The frame allows you to specify a set of rows for the window that is even smaller than the partition.
+-- The default frame contains the rows starting with the first row and up to the current row.
+-- For row 1, the window is just row 1. For row 3, the window contains rows 1 to 3.
+-- When using FIRST_VALUE, the first row is included by default, so you don’t have to worry about it to get the expected results.
+-- When using LAST_VALUE with the default frame, the window only goes up to the current row.
